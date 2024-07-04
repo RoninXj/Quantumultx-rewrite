@@ -13,7 +13,7 @@ function getcookie() {
         let header = $request.headers;
         let token = '';
         for (let key in header) {
-            if (key == 'Authorization') {
+            if (key == 'token') {
                 token = header[key]
             }
         }
