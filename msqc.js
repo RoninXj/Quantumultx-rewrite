@@ -13,13 +13,13 @@ const $ = new Env("猛士汽车");
 let header = $request.headers;
 let token ='';
 for (let key in header) {
-  if(key=='cookie'){
+  if(key=='Cookie'){
      token=header[key]
   }
 }
 if(token){
-          $.log(`${$.name}cookie获取成功🎉, token: ${token}`);
-          $.msg($.name, `cookie获取成功🎉`, `${token}`)
+          $.log(`${$.name}Cookie获取成功🎉, token: ${token}`);
+          $.msg($.name, `Cookie获取成功🎉`, `${token}`)
          }
     }
   }
