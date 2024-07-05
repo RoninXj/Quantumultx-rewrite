@@ -9,7 +9,7 @@ const $ = new Env("猛士汽车");
 .finally(() => $.done())
 
  function getcookie() {
-    if ($request.url.indexOf('info') > -1) {
+    if ($request.url.indexOf('get') > -1) {
 let header = $request.headers;
 let token ='';
 for (let key in header) {
