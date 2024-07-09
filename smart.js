@@ -1,4 +1,9 @@
 const $ = new Env("smart汽车");
+
+let sadiToken = ''; // 初始化 sadiToken
+let sauiToken = ''; // 初始化 sauiToken
+let requestBody = ''; // 初始化 requestBody
+
 !(async () => {
     if (typeof $request !== "undefined") {
         getcookie();
@@ -9,10 +14,6 @@ const $ = new Env("smart汽车");
 .finally(() => $.done());
 
 function getcookie() {
-    let sadiToken = ''; // 初始化 sadiToken
-    let sauiToken = ''; // 初始化 sauiToken
-    let requestBody = ''; // 初始化 requestBody
-
     $.log(`请求的URL: ${$request.url}`); // 调试日志，打印请求的URL
 
     // 从第一个请求获取 sadi 和 saui
@@ -48,8 +49,14 @@ function getcookie() {
 
     // 用 # 链接 sadiToken, sauiToken 和 requestBody
     let combinedData = `${sadiToken}#${sauiToken}#${requestBody}`;
-    $.log(`${$.name} 完整 ck 获取成功🎉: ${combinedData}`);
+    if (combinedData.trim() !== '##') { // 检查链接后的 combinedData 是否为空
+        $.log(`${$.name} 完整 ck 获取成功🎉: ${combinedData}`);
+        $.msg($.name, `完整 ck 获取成功🎉`, `${combinedData}`);
+    } else {
+        $.log(`未能获取到完整的参数`); // 调试日志
+    }
 }
+
 
 
 
