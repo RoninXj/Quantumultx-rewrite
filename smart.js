@@ -21,14 +21,14 @@ function getcookie() {
         let header = $request.headers;
         $.log(`请求头信息: ${JSON.stringify(header)}`); // 调试日志，打印请求头信息
         for (let key in header) {
-            if (key.toLowerCase() == 'sadi') { // 忽略大小写
+            if (key.toLowerCase() === 'sadi') { // 忽略大小写
                 sadiToken = header[key];
-            } else if (key.toLowerCase() == 'saui') { // 忽略大小写
+            } else if (key.toLowerCase() === 'saui') { // 忽略大小写
                 sauiToken = header[key];
             }
         }
         let token = `${sadiToken}#${sauiToken}`; // 用 # 链接 sadi 和 saui
-        if (token.trim() !== '') { // 检查链接后的 token 是否为空
+        if (token.trim() !== '#') { // 检查链接后的 token 是否为空
             $.log(`${$.name} sadi 和 saui 获取成功🎉, token: ${token}`);
             $.msg($.name, `sadi 和 saui 获取成功🎉`, `${token}`);
         } else {
@@ -56,6 +56,7 @@ function getcookie() {
         $.log(`未能获取到完整的参数`); // 调试日志
     }
 }
+
 
 
 
