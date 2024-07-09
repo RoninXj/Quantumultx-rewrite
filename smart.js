@@ -1,42 +1,44 @@
 const $ = new Env("smart汽车");
 !(async () => {
-    if (typeof $request!== "undefined") {
-        getRequestData()
-        $.done()
+    if (typeof $request !== "undefined") {
+        getRequestData();
+        $.done();
     }
 })()
 .catch((e) => $.logErr(e))
-.finally(() => $.done())
+.finally(() => $.done());
+
 function getRequestData() {
-    let sadiToken = ''; // 初始化 sadiToken
-    let sauiToken = ''; // 初始化 sauiToken
+    let sadiToken = ''; // Initialize sadiToken
+    let sauiToken = ''; // Initialize sauiToken
+    let requestBody = ''; // Initialize requestBody
 
     if ($request.url.indexOf('get?') > -1) {
         let header = $request.headers;
         for (let key in header) {
-            if (key ==='sadi') {
+            if (key === 'sadi') {
                 sadiToken = header[key];
-            } else if (key ==='saui') {
+            } else if (key === 'saui') {
                 sauiToken = header[key];
             }
         }
-        let token = `${sadiToken}#${sauiToken}`; // 用 # 链接 sadi 和 saui
-        if (token.trim()!== '') { // 检查链接后的 token 是否为空
-            $.log(`${$.name}ck 获取成功🎉, token: ${token}`);
+        let token = `${sadiToken}#${sauiToken}`; // Join sadi and saui with #
+        if (token.trim() !== '') { // Check if the joined token is not empty
+            $.log(`${$.name} ck 获取成功🎉, token: ${token}`);
             $.msg($.name, `ck 获取成功🎉`, `${token}`);
         }
     }
 
     if ($request.url.indexOf('quicklogin') > -1) {
-        let requestBody = $request.body;
-        if (requestBody) { // 添加判断，确保 requestBody 存在
-            $.log(`${$.name}请求体获取成功🎉: ${requestBody}`);
+        requestBody = $request.body || ''; // Ensure requestBody is initialized
+        if (requestBody) { // Check if requestBody exists
+            $.log(`${$.name} 请求体获取成功🎉: ${requestBody}`);
         }
     }
 
-    // 用 # 链接起来
-    let combinedData = `${sadiToken}#${sauiToken}#${requestBody || ''}`; // 处理 requestBody 可能为空的情况
-    $.log(`${$.name}完整 ck 获取成功🎉: ${combinedData}`);
+    // Join sadiToken, sauiToken, and requestBody with #
+    let combinedData = `${sadiToken}#${sauiToken}#${requestBody}`;
+    $.log(`${$.name} 完整 ck 获取成功🎉: ${combinedData}`);
 }
 
 
