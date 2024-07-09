@@ -13,12 +13,15 @@ function getcookie() {
     let sauiToken = ''; // 初始化 sauiToken
     let requestBody = ''; // 初始化 requestBody
 
-    if ($request.url.indexOf('identity') > -1) {
+    $.log(`请求的URL: ${$request.url}`); // 调试日志，打印请求的URL
+
+    if ($request.url.indexOf('user-identity') > -1) { // 根据规则修改判断条件
         let header = $request.headers;
+        $.log(`请求头信息: ${JSON.stringify(header)}`); // 调试日志，打印请求头信息
         for (let key in header) {
-            if (key == 'sadi') {
+            if (key.toLowerCase() == 'sadi') { // 忽略大小写
                 sadiToken = header[key];
-            } else if (key == 'saui') {
+            } else if (key.toLowerCase() == 'saui') { // 忽略大小写
                 sauiToken = header[key];
             }
         }
@@ -26,13 +29,17 @@ function getcookie() {
         if (token.trim() !== '') { // 检查链接后的 token 是否为空
             $.log(`${$.name} ck 获取成功🎉, token: ${token}`);
             $.msg($.name, `ck 获取成功🎉`, `${token}`);
+        } else {
+            $.log(`未能获取到 sadi 或 saui 参数`); // 调试日志
         }
     }
 
-    if ($request.url.indexOf('quicklogin') > -1) {
+    if ($request.url.indexOf('quicklogin') > -1) { // 根据规则修改判断条件
         requestBody = $request.body || ''; // 确保 requestBody 被初始化
         if (requestBody) { // 检查 requestBody 是否存在
             $.log(`${$.name} 请求体获取成功🎉: ${requestBody}`);
+        } else {
+            $.log(`未能获取到请求体`); // 调试日志
         }
     }
 
