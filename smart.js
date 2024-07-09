@@ -15,7 +15,7 @@ function getcookie() {
 
     $.log(`请求的URL: ${$request.url}`); // 调试日志，打印请求的URL
 
-    if ($request.url.indexOf('user-identity') > -1) { // 根据规则修改判断条件
+    if ($request.url.indexOf('user-center') > -1) { // 根据规则修改判断条件
         let header = $request.headers;
         $.log(`请求头信息: ${JSON.stringify(header)}`); // 调试日志，打印请求头信息
         for (let key in header) {
