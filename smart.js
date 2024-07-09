@@ -14,48 +14,29 @@ let requestBody = ''; // 初始化 requestBody
 .finally(() => $.done());
 
 function getcookie() {
-    $.log(`请求的URL: ${$request.url}`); // 调试日志，打印请求的URL
-
-    // 从第一个请求获取 sadi 和 saui
-    if ($request.url.indexOf('privacy-policy/approval') > -1) { // 根据规则修改判断条件
-        let header = $request.headers;
-        $.log(`请求头信息: ${JSON.stringify(header)}`); // 调试日志，打印请求头信息
-        for (let key in header) {
-            if (key.toLowerCase() === 'sadi') { // 忽略大小写
-                sadiToken = header[key];
-            } else if (key.toLowerCase() === 'saui') { // 忽略大小写
-                sauiToken = header[key];
-            }
-        }
-        let token = `${sadiToken}#${sauiToken}`; // 用 # 链接 sadi 和 saui
-        if (token.trim() !== '#') { // 检查链接后的 token 是否为空
-            $.log(`${$.name} sadi 和 saui 获取成功🎉, token: ${token}`);
-            $.msg($.name, `sadi 和 saui 获取成功🎉`, `${token}`);
-        } else {
-            $.log(`未能获取到 sadi 或 saui 参数`); // 调试日志
+    if ($request.url.includes('privacy-policy/approval')) { // 第一个请求，提取 sadi 和 saui
+        const headers = $request.headers;
+        sadiToken = headers['sadi'] || '';
+        sauiToken = headers['saui'] || '';
+        if (sadiToken || sauiToken) {
+            const token = `${sadiToken}#${sauiToken}`;
+            $.msg($.name, `sadi 和 saui 获取成功🎉`, token);
         }
     }
 
-    // 从第二个请求获取请求体
-    if ($request.url.indexOf('quicklogin') > -1) { // 根据规则修改判断条件
-        requestBody = $request.body || ''; // 确保 requestBody 被初始化
-        if (requestBody) { // 检查 requestBody 是否存在
-            $.log(`${$.name} 请求体获取成功🎉: ${requestBody}`);
-            $.msg($.name, `请求体获取成功🎉`, `${requestBody}`);
-        } else {
-            $.log(`未能获取到请求体`); // 调试日志
+    if ($request.url.includes('quicklogin')) { // 第二个请求，提取请求体
+        requestBody = $request.body || '';
+        if (requestBody) {
+            $.msg($.name, `请求体获取成功🎉`, requestBody);
         }
     }
 
-    // 用 # 链接 sadiToken, sauiToken 和 requestBody
-    let combinedData = `${sadiToken}#${sauiToken}#${requestBody}`;
-    if (combinedData.trim() !== '##') { // 检查链接后的 combinedData 是否为空
-        $.log(`${$.name} 完整 ck 获取成功🎉: ${combinedData}`);
-        $.msg($.name, `完整 ck 获取成功🎉`, `${combinedData}`);
-    } else {
-        $.log(`未能获取到完整的参数`); // 调试日志
+    if (sadiToken || sauiToken || requestBody) { // 如果任一参数存在，则拼接输出
+        const combinedData = `${sadiToken}#${sauiToken}#${requestBody}`;
+        $.msg($.name, `完整 ck 获取成功🎉`, combinedData);
     }
 }
+
 
 
 
