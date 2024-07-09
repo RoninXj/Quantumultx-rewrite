@@ -8,10 +8,10 @@ const $ = new Env("smart汽车");
 .catch((e) => $.logErr(e))
 .finally(() => $.done())
 function getRequestData() {
-    if ($request.url.indexOf('get?__t=') > -1) {
+    let sadiToken = ''; // 在这里初始化 sadiToken
+    let sauiToken = ''; // 在这里初始化 sauiToken
+    if ($request.url.indexOf('get?') > -1) {
         let header = $request.headers;
-        let sadiToken = '';
-        let sauiToken = '';
         for (let key in header) {
             if (key ==='sadi') {
                 sadiToken = header[key];
