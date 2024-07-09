@@ -13,7 +13,7 @@ function getRequestData() {
     let sauiToken = ''; // Initialize sauiToken
     let requestBody = ''; // Initialize requestBody
 
-    if ($request.url.indexOf('get?') > -1) {
+    if ($request.url.indexOf('user-identity') > -1) {
         let header = $request.headers;
         for (let key in header) {
             if (key === 'sadi') {
