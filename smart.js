@@ -16,10 +16,10 @@ function getRequestData() {
     if ($request.url.indexOf('identity') > -1) {
         let header = $request.headers;
         for (let key in header) {
-            if (key === 'sadi') {
-                sadiToken = header[key];
-            } else if (key === 'saui') {
-                sauiToken = header[key];
+            if (key== 'sadi') {
+                sadiToken=header[key];
+            } else if (key== 'saui') {
+                sauiToken=header[key];
             }
         }
         let token = `${sadiToken}#${sauiToken}`; // Join sadi and saui with #
