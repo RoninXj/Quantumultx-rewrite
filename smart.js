@@ -9,7 +9,7 @@ const $ = new Env("smart汽车");
 .finally(() => $.done())
 
 function getRequestData() {
-    if ($request.url.indexOf('login') > -1 || $request.url.indexOf('get') > -1) {
+    if ($request.url.indexOf('quicklogin') > -1) {
         let header = $request.headers;
         let token = '';
         for (let key in header) {
@@ -21,19 +21,18 @@ function getRequestData() {
             $.log(`${$.name}ck获取成功🎉, token: ${token}`);
             $.msg($.name, `ck获取成功🎉`, `${token}`);
         }
-
-        // 获取关键字 "get" 里的请求体
-        if ($request.url.indexOf('get') > -1) {
-            let requestBody = $request.body;
-            if (requestBody) { // 添加判断，确保 requestBody 存在
-                $.log(`${$.name}请求体获取成功🎉, 请求体: ${requestBody}`);
-            }
-        }
-
-        // 用 # 链接起来
-        let combinedData = `token: ${token} # 请求体: ${requestBody || ''}`; // 处理 requestBody 可能为空的情况
-        $.log(`${$.name}数据链接成功🎉, 链接后的数据: ${combinedData}`);
     }
+
+    if ($request.url.indexOf('get?__t=') > -1) {
+        let requestBody = $request.body;
+        if (requestBody) { // 添加判断，确保 requestBody 存在
+            $.log(`${$.name}请求体获取成功🎉, 请求体: ${requestBody}`);
+        }
+    }
+
+    // 用 # 链接起来
+    let combinedData = `token: ${token} # 请求体: ${requestBody || ''}`; // 处理 requestBody 可能为空的情况
+    $.log(`${$.name}完整ck获取成功🎉: ${combinedData}`);
 }
 
 
