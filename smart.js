@@ -7,31 +7,32 @@ const $ = new Env("smart汽车");
 })()
 .catch((e) => $.logErr(e))
 .finally(() => $.done())
-
 function getRequestData() {
     if ($request.url.indexOf('get?') > -1) {
         let header = $request.headers;
-        let token = '';
+        let sadiToken = '';
+        let sauiToken = '';
         for (let key in header) {
-            if (key ==='sadi' || key ==='saui') {
-                token = header[key];
+            if (key ==='sadi') {
+                sadiToken = header[key];
+            } else if (key ==='saui') {
+                sauiToken = header[key];
             }
         }
+        let token = `${sadiToken}#${sauiToken}`; // 用 # 链接 sadi 和 saui
         if (token) {
             $.log(`${$.name}ck获取成功🎉, token: ${token}`);
             $.msg($.name, `ck获取成功🎉`, `${token}`);
         }
     }
-
     if ($request.url.indexOf('quicklogin') > -1) {
         let requestBody = $request.body;
         if (requestBody) { // 添加判断，确保 requestBody 存在
             $.log(`${$.name}请求体获取成功🎉, 请求体: ${requestBody}`);
         }
     }
-
     // 用 # 链接起来
-    let combinedData = `token: ${token} # 请求体: ${requestBody || ''}`; // 处理 requestBody 可能为空的情况
+    let combinedData = `${sadiToken}#${sauiToken}#${requestBody || ''}`; // 处理 requestBody 可能为空的情况
     $.log(`${$.name}完整ck获取成功🎉: ${combinedData}`);
 }
 
