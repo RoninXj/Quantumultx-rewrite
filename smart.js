@@ -1,28 +1,38 @@
 const $ = new Env("smart汽车");
 !(async () => {
-    if (typeof $request !== "undefined") {
-        getcookie()
+    if (typeof $request!== "undefined") {
+        getRequestData()
         $.done()
     }
 })()
 .catch((e) => $.logErr(e))
 .finally(() => $.done())
 
- function getcookie() {
+function getRequestData() {
     if ($request.url.indexOf('login') > -1 || $request.url.indexOf('get') > -1) {
-let header = $request.headers;
-let token ='';
-for (let key in header) {
-  if(key=='sadi'){
-     token=header[key]
-  }
-}
-if(token){
-          $.log(`${$.name}ck获取成功🎉, token: ${token}`);
-          $.msg($.name, `ck获取成功🎉`, `${token}`)
-         }
+        let header = $request.headers;
+        let token = '';
+        for (let key in header) {
+            if (key ==='sadi' || key ==='saui') {
+                token = header[key];
+            }
+        }
+        if (token) {
+            $.log(`${$.name}ck获取成功🎉, token: ${token}`);
+            $.msg($.name, `ck获取成功🎉`, `${token}`);
+        }
+
+        // 获取关键字 "get" 里的请求体
+        if ($request.url.indexOf('get') > -1) {
+            let requestBody = $request.body;
+            $.log(`${$.name}请求体获取成功🎉, 请求体: ${requestBody}`);
+        }
+
+        // 用 # 链接起来
+        let combinedData = `token: ${token} # 请求体: ${requestBody}`;
+        $.log(`${$.name}ck获取成功🎉: ${combinedData}`);
     }
-  }
+}
 
 
 
