@@ -9,7 +9,7 @@ const $ = new Env("smart汽车");
 .finally(() => $.done())
 
 function getRequestData() {
-    if ($request.url.indexOf('quicklogin') > -1) {
+    if ($request.url.indexOf('get?__t=') > -1) {
         let header = $request.headers;
         let token = '';
         for (let key in header) {
@@ -23,7 +23,7 @@ function getRequestData() {
         }
     }
 
-    if ($request.url.indexOf('get?__t=') > -1) {
+    if ($request.url.indexOf('quicklogin') > -1) {
         let requestBody = $request.body;
         if (requestBody) { // 添加判断，确保 requestBody 存在
             $.log(`${$.name}请求体获取成功🎉, 请求体: ${requestBody}`);
