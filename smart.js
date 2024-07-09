@@ -18,20 +18,21 @@ function getcookie() {
         const headers = $request.headers;
         sadiToken = headers['sadi'] || '';
         sauiToken = headers['saui'] || '';
-        combineAndNotify();
     }
 
     if ($request.url.includes('quicklogin')) { // 第二个请求，提取请求体
         requestBody = $request.body || '';
     }
-}
 
-function combineAndNotify() {
-    if (sadiToken && sauiToken && requestBody) { // 确保所有参数都存在
-        const combinedData = `${sadiToken}#${sauiToken}#${requestBody}`;
+    // 在一个函数中处理所有请求并拼接参数
+    const combinedData = `${sadiToken}#${sauiToken}#${requestBody}`;
+    if (sadiToken || sauiToken || requestBody) { // 确保至少有一个参数被获取到
         $.msg($.name, `完整 ck 获取成功🎉`, combinedData);
+    } else {
+        $.msg($.name, `未能获取到所需的参数`);
     }
 }
+
 
 
 
