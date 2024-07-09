@@ -30,7 +30,7 @@ function getRequestData() {
     if ($request.url.indexOf('quicklogin') > -1) {
         let requestBody = $request.body;
         if (requestBody) { // 添加判断，确保 requestBody 存在
-            $.log(`${$.name}请求体获取成功🎉, 请求体: ${requestBody}`);
+            $.log(`${$.name}请求体获取成功🎉: ${requestBody}`);
         }
     }
 
