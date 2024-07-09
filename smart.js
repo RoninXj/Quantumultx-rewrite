@@ -25,15 +25,16 @@ function getRequestData() {
         // 获取关键字 "get" 里的请求体
         if ($request.url.indexOf('get') > -1) {
             let requestBody = $request.body;
-            $.log(`${$.name}请求体获取成功🎉, 请求体: ${requestBody}`);
+            if (requestBody) { // 添加判断，确保 requestBody 存在
+                $.log(`${$.name}请求体获取成功🎉, 请求体: ${requestBody}`);
+            }
         }
 
         // 用 # 链接起来
-        let combinedData = `token: ${token} # 请求体: ${requestBody}`;
-        $.log(`${$.name}ck获取成功🎉: ${combinedData}`);
+        let combinedData = `token: ${token} # 请求体: ${requestBody || ''}`; // 处理 requestBody 可能为空的情况
+        $.log(`${$.name}数据链接成功🎉, 链接后的数据: ${combinedData}`);
     }
 }
-
 
 
 
