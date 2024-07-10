@@ -1,9 +1,8 @@
 const $ = new Env("smart汽车");
 
-let sadiToken = ''; // 初始化 sadiToken
-let sauiToken = ''; // 初始化 sauiToken
-let requestBody = ''; // 初始化 requestBody
-
+let sadiToken = '';
+let sauiToken = '';
+let requestBody = '';
 !(async () => {
     if (typeof $request !== "undefined") {
         getcookie();
@@ -14,19 +13,18 @@ let requestBody = ''; // 初始化 requestBody
 .finally(() => $.done());
 
 function getcookie() {
-    if ($request.url.includes('privacy-policy/approval')) { // 第一个请求，提取 sadi 和 saui
+    if ($request.url.includes('privacy-policy/approval')) {
         const headers = $request.headers;
         sadiToken = headers['sadi'] || '';
         sauiToken = headers['saui'] || '';
     }
 
-    if ($request.url.includes('quicklogin')) { // 第二个请求，提取请求体
+    if ($request.url.includes('quicklogin')) {
         requestBody = $request.body || '';
     }
 
-    // 在一个函数中处理所有请求并拼接参数
     const combinedData = `${sadiToken}#${sauiToken}#${requestBody}`;
-    if (sadiToken || sauiToken || requestBody) { // 确保至少有一个参数被获取到
+    if (sadiToken || sauiToken || requestBody) { 
         $.msg($.name, `完整 ck 获取成功🎉`, combinedData);
     } else {
         $.msg($.name, `未能获取到所需的参数`);
