@@ -24,16 +24,22 @@ function getTokenFromRequest() {
 
 function formatBody(body) {
     try {
-        return JSON.parse(body);
+        let decodedBody = decodeURIComponent(body);
+        let parsedBody = {};
+        decodedBody.split('&').forEach(part => {
+            let [key, value] = part.split('=');
+            parsedBody[key] = value;
+        });
+        return JSON.parse(parsedBody.data);
     } catch (e) {
         $.logErr("解析请求体失败");
         return null;
     }
 }
 
-function extractToken(formattedBody) {
-    if (formattedBody && formattedBody.token) {
-        return formattedBody.token;
+function extractToken(parsedBody) {
+    if (parsedBody && parsedBody.tokenInfo && parsedBody.tokenInfo.token) {
+        return parsedBody.tokenInfo.token;
     }
     $.logErr("请求体中未找到token");
     return null;
