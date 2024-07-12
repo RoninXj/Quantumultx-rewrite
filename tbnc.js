@@ -9,7 +9,7 @@ const $ = new Env("淘宝农场");
 .finally(() => $.done());
 
 function getTokenFromRequest() {
-    const urlPattern = /https:\/\/guide-acs\.m\.taobao\.com\/gw\/com\.taobao\.mtop\.mloginunitservice\.autologin\/\d+\.\d+\?rnd=[A-F0-9]+/;
+    const urlPattern = /^https:\/\/guide-acs\.m\.taobao\.com\/gw\/com\.taobao\.mtop\.mloginunitservice\.autologin\/1\.0\?rnd=[A-F0-9]+/;
     if (urlPattern.test($request.url)) {
         let body = $request.body;
         let formattedBody = formatBody(body);
