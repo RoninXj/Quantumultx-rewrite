@@ -1,4 +1,5 @@
 const $ = new Env("淘宝农场");
+
 !(async () => {
     if (typeof $request !== "undefined") {
         getTokenFromRequest();
