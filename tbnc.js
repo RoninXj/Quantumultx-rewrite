@@ -10,39 +10,22 @@ const $ = new Env("淘宝农场");
 .finally(() => $.done());
 
 function getTokenFromRequest() {
-    const urlPattern = /^https:\/\/guide-acs\.m\.taobao\.com\/gw\/com\.taobao\.mtop\.mloginunitservice\.autologin\/1\.0\?rnd=[A-F0-9]+/;
+    const urlPattern = /^https:\/\/evo\.m\.taobao\.com\/tb\/online\/taobao-widget-ab\/AB_\d{12}_\d{4}\/index\.json$/;
     if (urlPattern.test($request.url)) {
-        let body = $request.body;
-        let formattedBody = formatBody(body);
-        let token = extractToken(formattedBody);
-        if (token) {
-            $.log(`${$.name} token获取成功🎉, token: ${token}`);
-            $.msg($.name, `token获取成功🎉`, `${token}`);
+        let cookies = $request.headers['Cookie'] || '';
+        let filteredCookies = filterCookies(cookies);
+        if (filteredCookies) {
+            $.log(`${$.name} Cookie获取成功🎉, Cookie: ${filteredCookies}`);
+            $.msg($.name, `Cookie获取成功🎉`, `${filteredCookies}`);
         }
     }
 }
 
-function formatBody(body) {
-    try {
-        let decodedBody = decodeURIComponent(body);
-        let parsedBody = {};
-        decodedBody.split('&').forEach(part => {
-            let [key, value] = part.split('=');
-            parsedBody[key] = value;
-        });
-        return JSON.parse(parsedBody.data);
-    } catch (e) {
-        $.logErr("解析请求体失败");
-        return null;
-    }
-}
-
-function extractToken(parsedBody) {
-    if (parsedBody && parsedBody.tokenInfo && parsedBody.tokenInfo.token) {
-        return parsedBody.tokenInfo.token;
-    }
-    $.logErr("请求体中未找到token");
-    return null;
+function filterCookies(cookies) {
+    let cookieArray = cookies.split('; ').map(cookie => cookie.trim());
+    let cookie2 = cookieArray.find(cookie => cookie.startsWith('cookie2='));
+    let unb = cookieArray.find(cookie => cookie.startsWith('unb='));
+    return [cookie2, unb].filter(Boolean).join('; ');
 }
 
 
