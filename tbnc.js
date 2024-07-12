@@ -1,28 +1,42 @@
 const $ = new Env("淘宝农场");
 !(async () => {
     if (typeof $request !== "undefined") {
-        getcookie()
-        $.done()
+        getTokenFromRequest();
+        $.done();
     }
 })()
 .catch((e) => $.logErr(e))
-.finally(() => $.done())
+.finally(() => $.done());
 
- function getcookie() {
-    if ($request.url.indexOf('myInfo') > -1) {
-let header = $request.headers;
-let token ='';
-for (let key in header) {
-  if(key=='token'){
-     token=header[key]
-  }
-}
-if(token){
-          $.log(`${$.name}token获取成功🎉, token: ${token}`);
-          $.msg($.name, `token获取成功🎉`, `${token}`)
-         }
+function getTokenFromRequest() {
+    const urlPattern = /https:\/\/guide-acs\.m\.taobao\.com\/gw\/com\.taobao\.mtop\.mloginunitservice\.autologin\/\d+\.\d+\?rnd=[A-F0-9]+/;
+    if (urlPattern.test($request.url)) {
+        let body = $request.body;
+        let formattedBody = formatBody(body);
+        let token = extractToken(formattedBody);
+        if (token) {
+            $.log(`${$.name} token获取成功🎉, token: ${token}`);
+            $.msg($.name, `token获取成功🎉`, `${token}`);
+        }
     }
-  }
+}
+
+function formatBody(body) {
+    try {
+        return JSON.parse(body);
+    } catch (e) {
+        $.logErr("解析请求体失败");
+        return null;
+    }
+}
+
+function extractToken(formattedBody) {
+    if (formattedBody && formattedBody.token) {
+        return formattedBody.token;
+    }
+    $.logErr("请求体中未找到token");
+    return null;
+}
 
 
 
