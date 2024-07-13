@@ -25,7 +25,7 @@ function filterCookies(cookies) {
     let cookieArray = cookies.split('; ').map(cookie => cookie.trim());
     let cookie2 = cookieArray.find(cookie => cookie.startsWith('cookie2='));
     let unb = cookieArray.find(cookie => cookie.startsWith('unb='));
-    return [cookie2, unb].filter(Boolean).join('; ');
+    return [cookie2, unb].filter(Boolean).join(';') + ';';
 }
 
 
