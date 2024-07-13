@@ -10,7 +10,7 @@ const $ = new Env("淘宝农场");
 .finally(() => $.done());
 
 function getTokenFromRequest() {
-    const urlPattern = /^https:\/\/evo\.m\.taobao\.com\/tb\/online\/taobao-widget-ab\/AB_\d{12}_\d{4}\/index\.json$/;
+    const urlPattern = /^https:\/\/guide-acs\.m\.taobao\.com\/gw\/mtop\.taobao\.upp\.service\.gateway\/2\.0\?rnd=[A-F0-9]{32}$/;
     if (urlPattern.test($request.url)) {
         let cookies = $request.headers['Cookie'] || '';
         let filteredCookies = filterCookies(cookies);
