@@ -1,4 +1,5 @@
 const $ = new Env("方程豹");
+
 !(async () => {
     if (typeof $request !== "undefined") {
         getcookie()
@@ -8,21 +9,15 @@ const $ = new Env("方程豹");
 .catch((e) => $.logErr(e))
 .finally(() => $.done())
 
- function getcookie() {
+function getcookie() {
     if ($request.url.indexOf('user') > -1) {
-let header = $request.headers;
-let token ='';
-for (let key in header) {
-  if(key=='token'){
-     token=header[key]
-  }
-}
-if(token){
-          $.log(`${$.name}ck获取成功🎉, token: ${token}`);
-          $.msg($.name, `ck获取成功🎉`, `${token}`)
-         }
+        let body = $request.body;
+        if (body) {
+            $.log(`${$.name} ck获取成功🎉, 请求体内容: ${JSON.stringify(body)}`);
+            $.msg($.name, `ck获取成功🎉`, `${JSON.stringify(body)}`)
+        }
     }
-  }
+}
 
 
 
