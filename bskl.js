@@ -1,4 +1,5 @@
 const $ = new Env("百事可乐");
+
 !(async () => {
     if (typeof $request !== "undefined") {
         getcookie()
@@ -8,21 +9,29 @@ const $ = new Env("百事可乐");
 .catch((e) => $.logErr(e))
 .finally(() => $.done())
 
- function getcookie() {
+function getcookie() {
     if ($request.url.indexOf('getPrizeList.do') > -1) {
-let header = $request.headers;
-let token ='';
-for (let key in header) {
-  if(key=='token'){
-     token=header[key]
-  }
-}
-if(token){
-          $.log(`${$.name}token获取成功🎉, token: ${token}`);
-          $.msg($.name, `token获取成功🎉`, `${token}`)
-         }
+        let header = $request.headers;
+        let token = '';
+
+        for (let key in header) {
+            // 转换成小写以避免大小写问题
+            if (key.toLowerCase() === 'token') {
+                token = header[key];
+                break; // 找到后可立即中断循环
+            }
+        }
+
+        if (token) {
+            $.log(`${$.name} token获取成功🎉, token: ${token}`);
+            $.msg($.name, `token获取成功🎉`, `${token}`);
+        } else {
+            $.log(`${$.name} 未找到token`);
+        }
+    } else {
+        $.log(`${$.name} URL不匹配`);
     }
-  }
+}
 
 
 
