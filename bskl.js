@@ -10,7 +10,7 @@ const $ = new Env("百事可乐");
 .finally(() => $.done())
 
 function getcookie() {
-    if ($request.url.indexOf('getPrizeList.do') > -1) {
+    if ($request.url.indexOf('token') > -1) {
         let header = $request.headers;
         let token = '';
 
