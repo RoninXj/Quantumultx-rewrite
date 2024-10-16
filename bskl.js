@@ -1,37 +1,21 @@
 const $ = new Env("百事可乐");
 
 !(async () => {
-    if (typeof $request !== "undefined") {
-        getcookie()
-        $.done()
+    if (typeof $request!== "undefined") {
+        if ($request.url.indexOf('token') > -1) {
+            const urlParams = new URLSearchParams($request.url.split('?')[1]);
+            const token = urlParams.get('token');
+            if (token) {
+                $.log(`${$.name}成功获取 token：${token}`);
+            } else {
+                $.log(`${$.name}未找到 token`);
+            }
+        }
+        $.done();
     }
 })()
 .catch((e) => $.logErr(e))
-.finally(() => $.done())
-
-function getcookie() {
-    if ($request.url.indexOf('token') > -1) {
-        let header = $request.url;
-        let token = '';
-
-        for (let key in header) {
-            // 转换成小写以避免大小写问题
-            if (key.toLowerCase() === 'token') {
-                token = header[key];
-                break; // 找到后可立即中断循环
-            }
-        }
-
-        if (token) {
-            $.log(`${$.name} token获取成功🎉, token: ${token}`);
-            $.msg($.name, `token获取成功🎉`, `${token}`);
-        } else {
-            $.log(`${$.name} 未找到token`);
-        }
-    } else {
-        $.log(`${$.name} URL不匹配`);
-    }
-}
+.finally(() => $.done());
 
 
 
