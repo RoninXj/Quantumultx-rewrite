@@ -11,7 +11,7 @@ const $ = new Env("百事可乐");
 
 function getcookie() {
     if ($request.url.indexOf('token') > -1) {
-        let header = $request.headers;
+        let header = $request.url;
         let token = '';
 
         for (let key in header) {
