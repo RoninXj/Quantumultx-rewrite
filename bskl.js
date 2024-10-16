@@ -7,6 +7,7 @@ const $ = new Env("百事可乐");
             const token = urlParams.get('token');
             if (token) {
                 $.log(`${$.name}成功获取 token：${token}`);
+                $.msg($.name, `获取成功`, `token: ${token}`);
             } else {
                 $.log(`${$.name}未找到 token`);
             }
