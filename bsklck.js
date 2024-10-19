@@ -11,6 +11,8 @@ const $ = new Env("百事可乐");
                 existingTokens += existingTokens? '\n' + token : token;
                 $.setval(existingTokens, 'bscmck');
                 $.msg($.name, `获取成功`, `token: ${token}`);
+                // 使用 setjson 进行存储，只存储 token 本身，不添加“token:”前缀
+                $.setjson(token, 'bscmck');
             } else {
                 $.log(`${$.name}未找到 token`);
             }
@@ -30,11 +32,11 @@ function Env(t, e) {
             this.send = function (t, e = "GET") {
                 t = "string" === typeof t? { url: t } : t;
                 let s = this.get;
-                return "POST" === e && (s = this.post), new Promise((e, i) => {
-                    s.call(this, t, (t, s, r) => {
+                return "POST" === e && (s = this.post), new Promise(((e, i) => {
+                    s.call(this, t, ((t, s, o) => {
                         t? i(t) : e(s);
-                    });
-                });
+                    }));
+                }));
             };
             this.get = function (t) {
                 return this.send.call(this.env, t);
@@ -47,6 +49,9 @@ function Env(t, e) {
 
     return new class {
         constructor(t, e) {
+            this.logLevels = { debug: 0, info: 1, warn: 2, error: 3 };
+            this.logLevelPrefixs = { debug: "[DEBUG] ", info: "[INFO] ", warn: "[WARN] ", error: "[ERROR] " };
+            this.logLevel = "info";
             this.name = t;
             this.http = new s(this);
             this.data = null;
@@ -57,23 +62,49 @@ function Env(t, e) {
             this.logSeparator = "\n";
             this.startTime = (new Date).getTime();
             Object.assign(this, e);
-            this.log("", `\ud83d\udd14${this.name}, \u5f00\u59cb!`);
+            this.log("", `🔔${this.name}, 开始!`);
+        }
+
+        getEnv() {
+            if ("undefined"!== typeof $environment && $environment["surge-version"]) {
+                return "Surge";
+            } else if ("undefined"!== typeof $environment && $environment["stash-version"]) {
+                return "Stash";
+            } else if ("undefined"!== typeof module && module.exports) {
+                return "Node.js";
+            } else if ("undefined"!== typeof $task) {
+                return "Quantumult X";
+            } else if ("undefined"!== typeof $loon) {
+                return "Loon";
+            } else if ("undefined"!== typeof $rocket) {
+                return "Shadowrocket";
+            } else {
+                return void 0;
+            }
         }
 
         isNode() {
-            return "undefined"!== typeof module &&!!module.exports;
+            return "Node.js" === this.getEnv();
         }
 
         isQuanX() {
-            return "undefined"!== typeof $task;
+            return "Quantumult X" === this.getEnv();
         }
 
         isSurge() {
-            return "undefined"!== typeof $httpClient && "undefined" === typeof $loon;
+            return "Surge" === this.getEnv();
         }
 
         isLoon() {
-            return "undefined"!== typeof $loon;
+            return "Loon" === this.getEnv();
+        }
+
+        isShadowrocket() {
+            return "Shadowrocket" === this.getEnv();
+        }
+
+        isStash() {
+            return "Stash" === this.getEnv();
         }
 
         toObj(t, e = null) {
@@ -84,9 +115,9 @@ function Env(t, e) {
             }
         }
 
-        toStr(t, e = null) {
+        toStr(t, e = null,...s) {
             try {
-                return JSON.stringify(t);
+                return JSON.stringify(t,...s);
             } catch {
                 return e;
             }
@@ -94,8 +125,7 @@ function Env(t, e) {
 
         getjson(t, e) {
             let s = e;
-            const i = this.getdata(t);
-            if (i) try {
+            if (this.getdata(t)) try {
                 s = JSON.parse(this.getdata(t));
             } catch {}
             return s;
@@ -110,33 +140,22 @@ function Env(t, e) {
         }
 
         getScript(t) {
-            return new Promise(e => {
-                this.get({ url: t }, (t, s, i) => e(i));
-            });
+            return new Promise((e => {
+                this.get({ url: t }, ((t, s, i) => e(i)));
+            }));
         }
 
         runScript(t, e) {
-            return new Promise(s => {
+            return new Promise((s => {
                 let i = this.getdata("@chavy_boxjs_userCfgs.httpapi");
                 i = i? i.replace(/\n/g, "").trim() : i;
-                let r = this.getdata("@chavy_boxjs_userCfgs.httpapi_timeout");
-                r = r? 1 * r : 20;
-                r = e && e.timeout? e.timeout : r;
-                const [o, h] = i.split("@");
-                const a = {
-                    url: `http://${h}/v1/scripting/evaluate`,
-                    body: {
-                        script_text: t,
-                        mock_type: "cron",
-                        timeout: r
-                    },
-                    headers: {
-                        "X-Key": o,
-                        Accept: "*/*"
-                    }
-                };
-                this.post(a, (t, e, i) => s(i));
-            }).catch(t => this.logErr(t));
+                let o = this.getdata("@chavy_boxjs_userCfgs.httpapi_timeout");
+                o = o? 1 * o : 20;
+                o = e && e.timeout? e.timeout : o;
+                const [r, a] = i.split("@");
+                const n = { url: `http://${a}/v1/scripting/evaluate`, body: { script_text: t, mock_type: "cron", timeout: o }, headers: { "X-Key": r, Accept: "*/*" }, timeout: o };
+                this.post(n, ((t, e, i) => s(i))).catch((t => this.logErr(t)));
+            }));
         }
 
         loaddata() {
@@ -168,29 +187,29 @@ function Env(t, e) {
                 const e = this.path.resolve(process.cwd(), this.dataFile);
                 const s = this.fs.existsSync(t);
                 const i =!s && this.fs.existsSync(e);
-                const r = JSON.stringify(this.data);
-                s? this.fs.writeFileSync(t, r) : i? this.fs.writeFileSync(e, r) : this.fs.writeFileSync(t, r);
+                const o = JSON.stringify(this.data);
+                s? this.fs.writeFileSync(t, o) : i? this.fs.writeFileSync(e, o) : this.fs.writeFileSync(t, o);
             }
         }
 
         lodash_get(t, e, s) {
             const i = e.replace(/\[(\d+)\]/g, ".$1").split(".");
-            let r = t;
-            for (const t of i) if (r = Object(r)[t], void 0 === r) return s;
-            return r;
+            let o = t;
+            for (const t of i) if (o = Object(o)[t], void 0 === o) return s;
+            return o;
         }
 
         lodash_set(t, e, s) {
-            return Object(t)!==t?t:(Array.isArray(e)||(e=e.toString().match(/[^.[\]]+/g)||[]),e.slice(0,-1).reduce((t,s,i)=>Object(t[s])===t[s]?t[s]:t[s]=Math.abs(e[i+1])>>0==+e[i+1]?[]:{},t)[e[e.length-1]]=s,t);
+            return Object(t)!==t?(Array.isArray(e)||(e=e.toString().match(/[^.[\]]+/g)||[]),e.slice(0,-1).reduce(((t,s,i)=>Object(t[s])===t[s]?t[s]:t[s]=Math.abs(e[i+1])>>0==+e[i+1]?[]:{}),t)[e[e.length-1]]=s,t):t;
         }
 
         getdata(t) {
             let e = this.getval(t);
             if (/^@/.test(t)) {
                 const [, s, i] = /^@(.*?)\.(.*?)$/.exec(t);
-                const r = s? this.getval(s) : "";
-                if (r) try {
-                    const t = JSON.parse(r);
+                const o = s? this.getval(s) : "";
+                if (o) try {
+                    const t = JSON.parse(o);
                     e = t? this.lodash_get(t, i, "") : e;
                 } catch (t) {
                     e = "";
@@ -202,141 +221,296 @@ function Env(t, e) {
         setdata(t, e) {
             let s =!1;
             if (/^@/.test(e)) {
-                const [, i, r] = /^@(.*?)\.(.*?)$/.exec(e);
-                const o = this.getval(i);
-                const h = i? "null" === o? null : o || "{}" : "{}";
+                const [, i, o] = /^@(.*?)\.(.*?)$/.exec(e);
+                const r = this.getval(i);
+                const a = i? "null" === r? null : r || "{}" : "{}";
                 try {
-                    const e = JSON.parse(h);
-                    this.lodash_set(e, r, t);
+                    const e = JSON.parse(a);
+                    this.lodash_set(e, o, t);
                     s = this.setval(JSON.stringify(e), i);
-                } catch (e) {
-                    const o = {};
-                    this.lodash_set(o, r, t);
-                    s = this.setval(JSON.stringify(o), i);
+                } catch (t) {
+                    const r = {};
+                    this.lodash_set(r, o, t);
+                    s = this.setval(JSON.stringify(r), i);
                 }
             } else s = this.setval(t, e);
             return s;
         }
 
         getval(t) {
-            return this.isSurge() || this.isLoon()? $persistentStore.read(t) : this.isQuanX()? $prefs.valueForKey(t) : this.isNode()? (this.data = this.loaddata(), this.data[t]) : this.data && this.data[t] || null;
+            switch (this.getEnv()) {
+                case "Surge":
+                case "Loon":
+                case "Stash":
+                case "Shadowrocket":
+                    return $persistentStore.read(t);
+                case "Quantumult X":
+                    return $prefs.valueForKey(t);
+                case "Node.js":
+                    return this.data = this.loaddata(), this.data[t];
+                default:
+                    return this.data && this.data[t] || null;
+            }
         }
 
         setval(t, e) {
-            return this.isSurge() || this.isLoon()? $persistentStore.write(t, e) : this.isQuanX()? $prefs.setValueForKey(t, e) : this.isNode()? (this.data = this.loaddata(), this.data[e] = t, this.writedata(),!0) : this.data && this.data[e] || null;
+            switch (this.getEnv()) {
+                case "Surge":
+                case "Loon":
+                case "Stash":
+                case "Shadowrocket":
+                    return $persistentStore.write(t, e);
+                case "Quantumult X":
+                    return $prefs.setValueForKey(t, e);
+                case "Node.js":
+                    return this.data = this.loaddata(), this.data[e] = t, this.writedata(),!0;
+                default:
+                    return this.data && this.data[e] || null;
+            }
         }
 
         initGotEnv(t) {
             this.got = this.got? this.got : require("got");
             this.cktough = this.cktough? this.cktough : require("tough-cookie");
             this.ckjar = this.ckjar? this.ckjar : new this.cktough.CookieJar;
-            t && (t.headers = t.headers? t.headers : {}, void 0 === t.headers.Cookie && void 0 === t.cookieJar && (t.cookieJar = this.ckjar));
+            t && (t.headers = t.headers? t.headers : {}, void 0 === t.headers.cookie && void 0 === t.headers.Cookie && void 0 === t.cookieJar && (t.cookieJar = this.ckjar));
         }
 
         get(t, e = (() => {})) {
-            t.headers && (delete t.headers["Content-Type"], delete t.headers["Content-Length"]);
-            this.isSurge() || this.isLoon()? (this.isSurge() && this.isNeedRewrite && (t.headers = t.headers || {}, Object.assign(t.headers, { "X-Surge-Skip-Scripting":!1 })), $httpClient.get(t, (t, s, i) => {
-               !t && s && (s.body = i, s.statusCode = s.status);
-                e(t, s, i);
-            })) : this.isQuanX()? (this.isNeedRewrite && (t.opts = t.opts || {}, Object.assign(t.opts, { hints:!1 })), $task.fetch(t).then(t => {
-                const { statusCode: s, statusCode: i, headers: r, body: o } = t;
-                e(null, { status: s, statusCode: i, headers: r, body: o }, o);
-            }, t => e(t))) : this.isNode() && (this.initGotEnv(t), this.got(t).on("redirect", (t, e) => {
-                try {
-                    if (t.headers["set-cookie"]) {
-                        const s = t.headers["set-cookie"].map(this.cktough.Cookie.parse).toString();
-                        this.ckjar.setCookieSync(s, null), e.cookieJar = this.ckjar;
-                    }
-                } catch (t) {
-                    this.logErr(t);
-                }
-            }).then(t => {
-                const { statusCode: s, statusCode: i, headers: r, body: o } = t;
-                e(null, { status: s, statusCode: i, headers: r, body: o }, o);
-            }, t => {
-                const { message: s, response: i } = t;
-                e(s, i, i && i.body);
-            }));
-        }
-
-        post(t, e = (() => {})) {
-            if (t.body && t.headers &&!t.headers["Content-Type"] && (t.headers["Content-Type"] = "application/x-www-form-urlencoded"), t.headers && delete t.headers["Content-Length"], this.isSurge() || this.isLoon()) this.isSurge() && this.isNeedRewrite && (t.headers = t.headers || {}, Object.assign(t.headers, { "X-Surge-Skip-Scripting":!1 })), $httpClient.post(t, (t, s, i) => {
-               !t && s && (s.body = i, s.statusCode = s.status);
-                e(t, s, i);
-            }); else if (this.isQuanX()) t.method = "POST", this.isNeedRewrite && (t.opts = t.opts || {}, Object.assign(t.opts, { hints:!1 })), $task.fetch(t).then(t => {
-                const { statusCode: s, statusCode: i, headers: r, body: o } = t;
-                e(null, { status: s, statusCode: i, headers: r, body: o }, o);
-            }, t => e(t)); else if (this.isNode()) {
-                this.initGotEnv(t);
-                const { url: s,...i } = t;
-                this.got.post(s, i).then(t => {
-                    const { statusCode: s, statusCode: i, headers: r, body: o } = t;
-                    e(null, { status: s, statusCode: i, headers: r, body: o }, o);
-                }, t => {
-                    const { message: s, response: i } = t;
-                    e(s, i, i && i.body);
-                });
+            switch (t.headers && (delete t.headers["Content-Type"], delete t.headers["Content-Length"], delete t.headers["content-type"], delete t.headers["content-length"]), t.params && (t.url += "?" + this.queryStr(t.params)), void 0 === t.followRedirect || t.followRedirect || ((this.isSurge() || this.isLoon()) && (t["auto-redirect"] =!1), this.isQuanX() && (t.opts? t.opts.redirection =!1 : t.opts = { redirection:!1 })), this.getEnv()) {
+                case "Surge":
+                case "Loon":
+                case "Stash":
+                case "Shadowrocket":
+                    default:
+                    this.isSurge() && this.isNeedRewrite && (t.headers = t.headers || {}, Object.assign(t.headers, { "X-Surge-Skip-Scripting":!1 })), $httpClient.get(t, ((t, s, i) => {
+                       !t && s && (s.body = i, s.statusCode = s.status? s.status : s.statusCode, s.status = s.statusCode), e(t, s, i);
+                    }));
+                    break;
+                case "Quantumult X":
+                    this.isNeedRewrite && (t.opts = t.opts || {}, Object.assign(t.opts, { hints:!1 })), $task.fetch(t).then((t => {
+                        const { statusCode: s, statusCode: i, headers: o, body: r, bodyBytes: a } = t;
+                        e(null, { status: s, statusCode: i, headers: o, body: r, bodyBytes: a }, r, a);
+                    }), (t => e(t && t.error || "UndefinedError")));
+                    break;
+                case "Node.js":
+                    let s = require("iconv-lite");
+                    this.initGotEnv(t), this.got(t).on("redirect", ((t, e) => {
+                        try {
+                            if (t.headers["set-cookie"]) {
+                                const s = t.headers["set-cookie"].map(this.cktough.Cookie.parse).toString();
+                                s && this.ckjar.setCookieSync(s, null), e.cookieJar = this.ckjar;
+                            }
+                        } catch (t) {
+                            this.logErr(t);
+                        }
+                    })).then((t => {
+                        const { statusCode: i, statusCode: o, headers: r, rawBody: a } = t, n = s.decode(a, this.encoding);
+                        e(null, { status: i, statusCode: o, headers: r, rawBody: a, body: n }, n);
+                    }), (t => {
+                        const { message: i, response: o } = t;
+                        e(i, o, o && s.decode(o.rawBody, this.encoding));
+                    }));
+                    break;
             }
         }
 
-        time(t) {
-            let e = {
-                "M+": (new Date).getMonth() + 1,
-                "d+": (new Date).getDate(),
-                "H+": (new Date).getHours(),
-                "m+": (new Date).getMinutes(),
-                "s+": (new Date).getSeconds(),
-                "q+": Math.floor(((new Date).getMonth() + 3) / 3),
-                S: (new Date).getMilliseconds()
-            };
-            /(y+)/.test(t) && (t = t.replace(RegExp.$1, ((new Date).getFullYear() + "").substr(4 - RegExp.$1.length)));
-            for (let s in e) new RegExp("(" + s + ")").test(t) && (t = t.replace(RegExp.$1, 1 == RegExp.$1.length? e[s] : ("00" + e[s]).substr(("" + e[s]).length)));
-            return t;
+        post(t, e = (() => {})) {
+            const s = t.method? t.method.toLocaleLowerCase() : "post";
+            switch (t.body && t.headers &&!t.headers["Content-Type"] &&!t.headers["content-type"] && (t.headers["content-type"] = "application/x-www-form-urlencoded"), t.headers && (delete t.headers["Content-Length"], delete t.headers["content-length"]), void 0 === t.followRedirect || t.followRedirect || ((this.isSurge() || this.isLoon()) && (t["auto-redirect"] =!1), this.isQuanX() && (t.opts? t.opts.redirection =!1 : t.opts = { redirection:!1 })), this.getEnv()) {
+                case "Surge":
+                case "Loon":
+                case "Stash":
+                case "Shadowrocket":
+                    default:
+                    this.isSurge() && this.isNeedRewrite && (t.headers = t.headers || {}, Object.assign(t.headers, { "X-Surge-Skip-Scripting":!1 })), $httpClient[s](t, ((t, s, i) => {
+                       !t && s && (s.body = i, s.statusCode = s.status? s.status : s.statusCode, s.status = s.statusCode), e(t, s, i);
+                    }));
+                    break;
+                case "Quantumult X":
+                    t.method = s, this.isNeedRewrite && (t.opts = t.opts || {}, Object.assign(t.opts, { hints:!1 })), $task.fetch(t).then((t => {
+                        const { statusCode: s, statusCode: i, headers: o, body: r, bodyBytes: a } = t;
+                        e(null, { status: s, statusCode: i, headers: o, body: r, bodyBytes: a }, r, a);
+                    }), (t => e(t && t.error || "UndefinedError")));
+                    break;
+                case "Node.js":
+                    let i = require("iconv-lite");
+                    this.initGotEnv(t);
+                    const { url: o,...r } = t;
+                    this.got[s](o, r).then((t => {
+                        const { statusCode: s, statusCode: o, headers: r, rawBody: a } = t, n = i.decode(a, this.encoding);
+                        e(null, { status: s, statusCode: o, headers: r, rawBody: a, body: n }, n);
+                    }), (t => {
+                        const { message: s, response: o } = t;
+                        e(s, o, o && i.decode(o.rawBody, this.encoding));
+                    }));
+                    break;
+            }
         }
 
-        msg(e = t, s = "", i = "", r) {
-            const o = t => {
-                if (!t) return t;
-                if ("string" === typeof t) return this.isLoon()? t : this.isQuanX()? { "open-url": t } : this.isSurge()? { url: t } : void 0;
-                if ("object" === typeof t) {
-                    if (this.isLoon()) {
-                        let e = t.openUrl || t.url || t["open-url"], s = t.mediaUrl || t["media-url"];
-                        return { openUrl: e, mediaUrl: s };
-                    }
-                    if (this.isQuanX()) {
-                        let e = t["open-url"] || t.url || t.openUrl, s = t["media-url"] || t.mediaUrl;
-                        return { "open-url": e, "media-url": s };
-                    }
-                    if (this.isSurge()) {
-                        let e = t.url || t.openUrl || t["open-url"];
-                        return { url: e };
-                    }
+        time(t, e = null) {
+    let s = e? new Date(e) : new Date();
+    let i = {
+        "M+": s.getMonth() + 1,
+        "d+": s.getDate(),
+        "H+": s.getHours(),
+        "m+": s.getMinutes(),
+        "s+": s.getSeconds(),
+        "q+": Math.floor((s.getMonth() + 3) / 3),
+        S: s.getMilliseconds()
+    };
+    /(y+)/.test(t) && (t = t.replace(RegExp.$1, (s.getFullYear() + "").substr(4 - RegExp.$1.length)));
+    for (let e in i) new RegExp("(" + e + ")").test(t) && (t = t.replace(RegExp.$1, 1 == RegExp.$1.length? i[e] : ("00" + i[e]).substr(("" + i[e]).length));
+    return t;
+}
+
+queryStr(t) {
+    let e = "";
+    for (const s in t) {
+        let i = t[s];
+        null!= i && ""!== i && ("object" == typeof i && (i = JSON.stringify(i)), e += `${s}=${i}&`);
+    }
+    return e = e.substring(0, e.length - 1), e;
+}
+
+msg(e = t, s = "", i = "", o = {}) {
+    const r = t => {
+        const {$open: e, $copy: s, $media: i, $mediaMime: o} = t;
+        switch (typeof t) {
+            case void 0:
+                return t;
+            case "string":
+                switch (this.getEnv()) {
+                    case "Surge":
+                    case "Stash":
+                        default:
+                        return { url: t };
+                    case "Loon":
+                    case "Shadowrocket":
+                        return t;
+                    case "Quantumult X":
+                        return { "open-url": t };
+                    case "Node.js":
+                        return;
                 }
-            };
-            this.isMute || (this.isSurge() || this.isLoon()? $notification.post(e, s, i, o(r)) : this.isQuanX() && $notify(e, s, i, o(r)));
-            let h = ["", "==============\ud83d\udce3\u7cfb\u7edf\u901a\u77e5\ud83d\udce3=============="];
-            h.push(e), s && h.push(s), i && h.push(i), console.log(h.join("\n")), this.logs = this.logs.concat(h);
+            case "object":
+                switch (this.getEnv()) {
+                    case "Surge":
+                    case "Stash":
+                    case "Shadowrocket":
+                        default: {
+                            const r = {};
+                            let a = t.openUrl || t.url || t["open-url"] || e;
+                            a && Object.assign(r, { action: "open-url", url: a });
+                            let n = t["update-pasteboard"] || t.updatePasteboard || s;
+                            if (n && Object.assign(r, { action: "clipboard", text: n }), i) {
+                                let t, e, s;
+                                if (i.startsWith("http")) t = i;
+                                else if (i.startsWith("data:")) {
+                                    const [t] = i.split(";"), [, o] = i.split(",");
+                                    e = o, s = t.replace("data:", "");
+                                } else {
+                                    e = i, s = (t => {
+                                        const e = {
+                                            JVBERi0: "application/pdf",
+                                            R0lGODdh: "image/gif",
+                                            R0lGODlh: "image/gif",
+                                            iVBORw0KGgo: "image/png",
+                                            "/9j/": "image/jpg"
+                                        };
+                                        for (var s in e) if (0 === t.indexOf(s)) return e[s];
+                                        return null;
+                                    })(i);
+                                }
+                                Object.assign(r, { "media-url": t, "media-base64": e, "media-base64-mime": o?? s });
+                            }
+                            return Object.assign(r, { "auto-dismiss": t["auto-dismiss"], sound: t.sound }), r;
+                        }
+                    case "Loon": {
+                        const s = {};
+                        let o = t.openUrl || t.url || t["open-url"] || e;
+                        o && Object.assign(s, { openUrl: o });
+                        let r = t.mediaUrl || t["media-url"];
+                        return i?.startsWith("http") && (r = i), r && Object.assign(s, { mediaUrl: r }), console.log(JSON.stringify(s)), s;
+                    }
+                    case "Quantumult X": {
+                        const o = {};
+                        let r = t["open-url"] || t.url || t.openUrl || e;
+                        r && Object.assign(o, { "open-url": r });
+                        let a = t["media-url"] || t.mediaUrl;
+                        i?.startsWith("http") && (a = i), a && Object.assign(o, { "media-url": a });
+                        let n = t["update-pasteboard"] || t.updatePasteboard || s;
+                        return n && Object.assign(o, { "update-pasteboard": n }), console.log(JSON.stringify(o)), o;
+                    }
+                    case "Node.js":
+                        return;
+                }
+            default:
+                return;
         }
+    };
+    if (!this.isMute) switch (this.getEnv()) {
+        case "Surge":
+        case "Loon":
+        case "Stash":
+        case "Shadowrocket":
+        case "Quantumult X":
+            default:
+            $notification.post(e, s, i, r(o));
+            break;
+        case "Node.js":
+            break;
+    }
+    if (!this.isMuteLog) {
+        let t = ["", "==============📣系统通知📣=============="];
+        t.push(e), s && t.push(s), i && t.push(i), console.log(t.join("\n")), this.logs = this.logs.concat(t);
+    }
+}
 
-        log(...t) {
-            t.length > 0 && (this.logs = [...this.logs,...t]), console.log(t.join(this.logSeparator));
-        }
+debug(...t) {
+    this.logLevels[this.logLevel] <= this.logLevels.debug && (t.length > 0 && (this.logs = [...this.logs,...t]), console.log(`${this.logLevelPrefixs.debug}${t.map((t => t?? String(t))).join(this.logSeparator)}`));
+}
 
-        logErr(t, e) {
-            const s =!this.isSurge() &&!this.isQuanX() &&!this.isLoon();
-            s? this.log("", `\u2757\ufe0f${this.name}, \u9519\u8bef!`, t.stack) : this.log("", `\u2757\ufe0f${this.name}, \u9519\u8bef!`, t);
-        }
+info(...t) {
+    this.logLevels[this.logLevel] <= this.logLevels.info && (t.length > 0 && (this.logs = [...this.logs,...t]), console.log(`${this.logLevelPrefixs.info}${t.map((t => t?? String(t))).join(this.logSeparator)}`));
+}
 
-        wait(t) {
-            return new Promise(e => setTimeout(e, t));
-        }
+warn(...t) {
+    this.logLevels[this.logLevel] <= this.logLevels.warn && (t.length > 0 && (this.logs = [...this.logs,...t]), console.log(`${this.logLevelPrefixs.warn}${t.map((t => t?? String(t))).join(this.logSeparator)}`));
+}
 
-        done(t = {}) {
-            const e = (new Date).getTime();
-            const s = (e - this.startTime) / 1e3;
-            this.log("", `\ud83d\udd14${this.name}, \u7ed3\u675f! \ud83d\udd5b ${s} \u79d2`);
-            this.log();
-            (this.isSurge() || this.isQuanX() || this.isLoon()) && $done(t);
-        }
-    }(t, e);
+error(...t) {
+    this.logLevels[this.logLevel] <= this.logLevels.error && (t.length > 0 && (this.logs = [...this.logs,...t]), console.log(`${this.logLevelPrefixs.error}${t.map((t => t?? String(t))).join(this.logSeparator)}`));
+}
+
+log(...t) {
+    t.length > 0 && (this.logs = [...this.logs,...t]), console.log(t.map((t => t?? String(t))).join(this.logSeparator));
+}
+
+logErr(t, e) {
+    switch (this.getEnv()) {
+        case "Surge":
+        case "Loon":
+        case "Stash":
+        case "Shadowrocket":
+        case "Quantumult X":
+            default:
+            this.log("", `❗️${this.name}, 错误!`, e, t);
+            break;
+        case "Node.js":
+            this.log("", `❗️${this.name}, 错误!`, e, void 0!== t.message? t.message : t, t.stack);
+            break;
+    }
+}
+
+wait(t) {
+    return new Promise((e => setTimeout(e, t)));
+}
+
+done(t = {}) {
+    const e = (new Date).getTime();
+    const s = (e - this.startTime) / 1e3;
+    this.log("", `🔔${this.name}, 结束! 🕛 ${s} 秒`);
+    this.log();
+    (this.isSurge() || this.isQuanX() || this.isLoon()) && $done(t);
 }
