@@ -13,13 +13,13 @@ const $ = new Env("强爽清爽");
 let header = $request.headers;
 let token ='';
 for (let key in header) {
-  if(key=='token'){
+  if(key=='Authorization'){
      token=header[key]
   }
 }
 if(token){
-          $.log(`${$.name}token获取成功🎉, token: ${token}`);
-          $.msg($.name, `token获取成功🎉`, `${token}`)
+          $.log(`${$.name}Authorization获取成功🎉, Authorization: ${token}`);
+          $.msg($.name, `Authorization获取成功🎉`, `${token}`)
          }
     }
   }
