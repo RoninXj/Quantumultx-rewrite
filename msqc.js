@@ -9,27 +9,45 @@ const $ = new Env("猛士汽车");
 .catch((e) => $.logErr(e))
 .finally(() => $.done());
 
-async function getValues() {
-    let cookie = '';
-    let deviceSN = '';
-    let signEncrypt = '';
-
-    let header = $request.headers;
-    for (let key in header) {
-        if (key === 'Cookie') {
-            cookie = header[key];
-        } else if (key === 'deviceSN') {
-            deviceSN = header[key];
-        } else if (key === 'sign-encrypt') {
-            signEncrypt = header[key];
+function getValues() {
+    return new Promise((resolve, reject) => {
+        function getcookie() {
+            if ($request.url.indexOf('get') > -1) {
+                let header = $request.headers;
+                let cookie = '';
+                let deviceSN = '';
+                let signEncrypt = '';
+                for (let key in header) {
+                    if (key === 'Cookie') {
+                        cookie = header[key];
+                    } else if (key === 'deviceSN') {
+                        deviceSN = header[key];
+                    } else if (key === 'sign-encrypt') {
+                        signEncrypt = header[key];
+                    }
+                }
+                if (cookie && deviceSN && signEncrypt) {
+                    return `${cookie}#${deviceSN}#${signEncrypt}`;
+                } else {
+                    return null;
+                }
+            } else {
+                return null;
+            }
         }
-    }
-
-    if (cookie && deviceSN && signEncrypt) {
-        let combinedValue = `${cookie}#${deviceSN}#${signEncrypt}`;
-        $.log(`${$.name}Values 获取成功🎉, combinedValue: ${combinedValue}`);
-        $.msg($.name, `Values 获取成功🎉`, `${combinedValue}`);
-    }
+        try {
+            const combinedValue = getcookie();
+            if (combinedValue) {
+                $.log(`${$.name}Values 获取成功🎉, combinedValue: ${combinedValue}`);
+                $.msg($.name, `Values 获取成功🎉`, `${combinedValue}`);
+                resolve();
+            } else {
+                reject('未能获取到完整的值');
+            }
+        } catch (error) {
+            reject(error);
+        }
+    });
 }
 
 
