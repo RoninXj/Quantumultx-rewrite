@@ -15,19 +15,19 @@ function getValues() {
             if ($request.url.indexOf('get') > -1) {
                 let header = $request.headers;
                 let cookie = '';
-                let deviceSN = '';
+                let devicesn = '';
                 let signEncrypt = '';
                 for (let key in header) {
                     if (key === 'Cookie') {
                         cookie = header[key];
-                    } else if (key === 'deviceSN') {
-                        deviceSN = header[key];
+                    } else if (key === 'devicesn') {
+                        devicesn = header[key];
                     } else if (key === 'sign-encrypt') {
                         signEncrypt = header[key];
                     }
                 }
-                if (cookie && deviceSN && signEncrypt) {
-                    return `${cookie}#${deviceSN}#${signEncrypt}`;
+                if (cookie && devicesn && signEncrypt) {
+                    return `${cookie}#${devicesn}#${signEncrypt}`;
                 } else {
                     return null;
                 }
