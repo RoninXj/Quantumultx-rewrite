@@ -14,31 +14,31 @@ async function getValues() {
     let deviceSN = '';
     let signEncrypt = '';
 
-    // 获取第一个链接中的 sign-encrypt 值
+    // 获取第一个链接中的 sign-encrypt 和 deviceSN 值
     if ($request.url.indexOf('https://c-access.m-hero.com/v1/app/vip/account/get') > -1) {
         let header = $request.headers;
         for (let key in header) {
             if (key === 'sign-encrypt') {
                 signEncrypt = header[key];
-                break;
-            }
-        }
-    }
-
-    // 获取指定链接中的 Cookie 和 deviceSN 值
-    if ($request.url.indexOf('https://c-access.m-hero.com/v1/vip/account/get') > -1) {
-        let header = $request.headers;
-        for (let key in header) {
-            if (key === 'Cookie') {
-                cookie = header[key];
             } else if (key === 'deviceSN') {
                 deviceSN = header[key];
             }
         }
     }
 
+    // 获取指定链接中的 Cookie 值
+    if ($request.url.indexOf('https://c-access.m-hero.com/v1/vip/account/get') > -1) {
+        let header = $request.headers;
+        for (let key in header) {
+            if (key === 'Cookie') {
+                cookie = header[key];
+                break;
+            }
+        }
+    }
+
     if (cookie && deviceSN && signEncrypt) {
-        let combinedValue = `${cookie}#${deviceSN}#sign-encrypt:https://c-access.m-hero.com/v1/app/vip/account/get`;
+        let combinedValue = `${cookie}#${deviceSN}#${signEncrypt}`;
         $.log(`${$.name}Values 获取成功🎉, combinedValue: ${combinedValue}`);
         $.msg($.name, `Values 获取成功🎉`, `${combinedValue}`);
     }
