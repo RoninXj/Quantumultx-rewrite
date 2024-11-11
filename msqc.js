@@ -14,26 +14,14 @@ async function getValues() {
     let deviceSN = '';
     let signEncrypt = '';
 
-    // 获取第一个链接中的 sign-encrypt 和 deviceSN 值
-    if ($request.url.indexOf('https://c-access.m-hero.com/v1/app/vip/account/get') > -1) {
-        let header = $request.headers;
-        for (let key in header) {
-            if (key === 'sign-encrypt') {
-                signEncrypt = header[key];
-            } else if (key === 'deviceSN') {
-                deviceSN = header[key];
-            }
-        }
-    }
-
-    // 获取指定链接中的 Cookie 值
-    if ($request.url.indexOf('https://c-access.m-hero.com/v1/vip/account/get') > -1) {
-        let header = $request.headers;
-        for (let key in header) {
-            if (key === 'Cookie') {
-                cookie = header[key];
-                break;
-            }
+    let header = $request.headers;
+    for (let key in header) {
+        if (key === 'Cookie') {
+            cookie = header[key];
+        } else if (key === 'deviceSN') {
+            deviceSN = header[key];
+        } else if (key === 'sign-encrypt') {
+            signEncrypt = header[key];
         }
     }
 
