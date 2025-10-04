@@ -15,12 +15,11 @@ function getcookie() {
         let body = $request.body;
         if (body) {
             try {
-                // 尝试解析请求体为JSON
-                const parsedBody = JSON.parse(body);
+                // 解析application/x-www-form-urlencoded格式
+                const params = new URLSearchParams(body);
+                const tokenValue = params.get('token');
                 
-                // 检查是否包含token字段
-                if (parsedBody.token) {
-                    const tokenValue = parsedBody.token;
+                if (tokenValue) {
                     $.log(`${$.name} token获取成功🎉, token值: ${tokenValue}`);
                     $.msg($.name, `token获取成功🎉`, `token: ${tokenValue}`);
                 } else {
@@ -28,13 +27,14 @@ function getcookie() {
                     $.msg($.name, `未找到token`, `请求体中不包含token字段`);
                 }
             } catch (e) {
-                // 如果解析JSON失败，提示格式错误
+                // 解析失败处理
                 $.logErr(`${$.name} 请求体解析失败: ${e.message}`);
-                $.msg($.name, `解析失败`, `请求体格式不是有效的JSON`);
+                $.msg($.name, `解析失败`, `请求体格式解析错误`);
             }
         }
     }
 }
+
 
 
 
