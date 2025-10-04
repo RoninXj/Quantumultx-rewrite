@@ -10,15 +10,31 @@ const $ = new Env("顺丰中秋抽卡");
 .finally(() => $.done())
 
 function getcookie() {
-    if ($request.url.indexOf('token') > -1) {
+    // 检查URL是否包含card_index
+    if ($request.url.indexOf('card_index') > -1) {
         let body = $request.body;
         if (body) {
-            $.log(`${$.name} token获取成功🎉, 请求体内容: ${JSON.stringify(body)}`);
-            $.msg($.name, `token获取成功🎉`, `${JSON.stringify(body)}`)
+            try {
+                // 尝试解析请求体为JSON
+                const parsedBody = JSON.parse(body);
+                
+                // 检查是否包含token字段
+                if (parsedBody.token) {
+                    const tokenValue = parsedBody.token;
+                    $.log(`${$.name} token获取成功🎉, token值: ${tokenValue}`);
+                    $.msg($.name, `token获取成功🎉`, `token: ${tokenValue}`);
+                } else {
+                    $.log(`${$.name} 请求体中未找到token字段`);
+                    $.msg($.name, `未找到token`, `请求体中不包含token字段`);
+                }
+            } catch (e) {
+                // 如果解析JSON失败，提示格式错误
+                $.logErr(`${$.name} 请求体解析失败: ${e.message}`);
+                $.msg($.name, `解析失败`, `请求体格式不是有效的JSON`);
+            }
         }
     }
 }
-
 
 
 
